@@ -52,11 +52,20 @@ exports.getProductsByCategory = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     let productToUpdate = await Product.findByIdAndUpdate(
         req.params.id,
+        req.file?
         {
             product_name: req.body.product_name,
             product_price: req.body.product_price,
             product_description: req.body.product_description,
             product_image: req.file.path,
+            category: req.body.category,
+            count_in_stock: req.body.count_in_stock,
+            rating: req.body.rating
+        }:{
+            product_name: req.body.product_name,
+            product_price: req.body.product_price,
+            product_description: req.body.product_description,
+            // product_image: req.file.path,
             category: req.body.category,
             count_in_stock: req.body.count_in_stock,
             rating: req.body.rating
@@ -69,4 +78,18 @@ exports.updateProduct = async (req, res) => {
     else{
         res.send(productToUpdate)
     }
+}
+
+// to delete Product
+exports.deleteProduct = (req, res) => {
+    Product.findByIdAndDelete(req.params.id)
+    .then(product=>{
+        if(!product){
+            return res.status(400).json({error:"Product not found"})
+        }
+        return res.status(200).json({message:"Product deleted successfully"})
+    })
+    .catch(error=>{
+        return res.status(400).json({error:error.message})
+    })
 }
