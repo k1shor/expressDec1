@@ -93,3 +93,36 @@ exports.deleteProduct = (req, res) => {
         return res.status(400).json({error:error.message})
     })
 }
+
+// to get filtered product
+exports.filterProduct = async (req,res) => {
+    let sortBy = req.query.sortBy? req.query.sortBy : 'created_at'
+    let order = req.query.order? req.query.order : 'ASC'
+    let limit = req.query.limit ? req.query.limit : 999999999
+    let skip = req.query.skip ? req.query.skip : 0
+    // get filters
+    let Args = {}
+    for(let key in req.body.filters){
+        if(req.body.filters[key].length>0){
+            if(key=="category"){
+                Args[key] = req.body.filters[key]
+            }
+            else{
+                Args[key]={
+                    $gte: req.body.filters[key][0],
+                    $lte: req.body.filters[key][1]
+                }
+            }
+        }
+    }
+    console.log(req.body.filters)
+    let filteredProduct = await Product.find(Args).populate('category')
+    .sort([[sortBy, order]])
+    .limit(limit)
+    .skip(skip)
+    if(!filteredProduct){
+        return res.status(400).json({error:"Something went wrong"})
+    }
+    res.send(filteredProduct)
+
+}
